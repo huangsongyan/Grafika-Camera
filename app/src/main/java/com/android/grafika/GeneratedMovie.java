@@ -70,7 +70,7 @@ public abstract class GeneratedMovie implements Content {
      * Prepares the video encoder, muxer, and an EGL input surface.
      */
     protected void prepareEncoder(String mimeType, int width, int height, int bitRate,
-            int framesPerSecond, File outputFile) throws IOException {
+                                  int framesPerSecond, File outputFile) throws IOException {
         mBufferInfo = new MediaCodec.BufferInfo();
 
         MediaFormat format = MediaFormat.createVideoFormat(mimeType, width, height);
@@ -149,6 +149,7 @@ public abstract class GeneratedMovie implements Content {
     }
 
     /**
+     * 提交帧到编码器
      * Submits a frame to the encoder.
      *
      * @param presentationTimeNsec The presentation time stamp, in nanoseconds.

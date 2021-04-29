@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
+ * 同时解码两个视频流到两个TextureViews
  * Decodes two video streams simultaneously to two TextureViews.
  * <p>
  * One key feature is that the video decoders do not stop when the activity is restarted due

@@ -51,12 +51,14 @@ public class EglSurfaceBase {
     /**
      * Creates a window surface.
      * <p>
+     *
      * @param surface May be a Surface or SurfaceTexture.
      */
     public void createWindowSurface(Object surface) {
         if (mEGLSurface != EGL14.EGL_NO_SURFACE) {
             throw new IllegalStateException("surface already created");
         }
+        //创建EglSurface
         mEGLSurface = mEglCore.createWindowSurface(surface);
 
         // Don't cache width/height here, because the size of the underlying surface can change
@@ -72,6 +74,7 @@ public class EglSurfaceBase {
         if (mEGLSurface != EGL14.EGL_NO_SURFACE) {
             throw new IllegalStateException("surface already created");
         }
+        //创建离屏EglSurface
         mEGLSurface = mEglCore.createOffscreenSurface(width, height);
         mWidth = width;
         mHeight = height;
@@ -113,6 +116,7 @@ public class EglSurfaceBase {
     }
 
     /**
+     * 绑定上下文
      * Makes our EGL context and surface current.
      */
     public void makeCurrent() {

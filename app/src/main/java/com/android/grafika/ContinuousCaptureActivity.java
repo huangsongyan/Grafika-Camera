@@ -151,7 +151,7 @@ public class ContinuousCaptureActivity extends Activity implements SurfaceHolder
                 }
                 case MSG_BUFFER_STATUS: {
                     long duration = (((long) msg.arg1) << 32) |
-                                    (((long) msg.arg2) & 0xffffffffL);
+                            (((long) msg.arg2) & 0xffffffffL);
                     activity.updateBufferStatus(duration);
                     break;
                 }
@@ -184,7 +184,7 @@ public class ContinuousCaptureActivity extends Activity implements SurfaceHolder
 
         if (!PermissionHelper.hasCameraPermission(this)) {
             PermissionHelper.requestCameraPermission(this, false);
-        } else  {
+        } else {
             if (mCamera == null) {
                 // Ideally, the frames from the camera are at the same resolution as the input to
                 // the video encoder so we don't have to scale.
@@ -254,6 +254,7 @@ public class ContinuousCaptureActivity extends Activity implements SurfaceHolder
             throw new RuntimeException("Unable to open camera");
         }
 
+        //获取相机参数
         Camera.Parameters parms = mCamera.getParameters();
 
         CameraUtils.choosePreviewSize(parms, desiredWidth, desiredHeight);
@@ -274,12 +275,12 @@ public class ContinuousCaptureActivity extends Activity implements SurfaceHolder
 
         AspectFrameLayout layout = (AspectFrameLayout) findViewById(R.id.continuousCapture_afl);
 
-        Display display = ((WindowManager)getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
+        Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
 
-        if(display.getRotation() == Surface.ROTATION_0) {
+        if (display.getRotation() == Surface.ROTATION_0) {
             mCamera.setDisplayOrientation(90);
             layout.setAspectRatio((double) cameraPreviewSize.height / cameraPreviewSize.width);
-        } else if(display.getRotation() == Surface.ROTATION_270) {
+        } else if (display.getRotation() == Surface.ROTATION_270) {
             layout.setAspectRatio((double) cameraPreviewSize.height / cameraPreviewSize.width);
             mCamera.setDisplayOrientation(180);
         } else {
@@ -305,8 +306,9 @@ public class ContinuousCaptureActivity extends Activity implements SurfaceHolder
      * Updates the current state of the controls.
      */
     private void updateControls() {
+
         String str = getString(R.string.secondsOfVideo, mSecondsOfVideo);
-        TextView tv = (TextView) findViewById(R.id.capturedVideoDesc_text);
+        TextView tv = findViewById(R.id.capturedVideoDesc_text);
         tv.setText(str);
 
         boolean wantEnabled = (mCircEncoder != null) && !mFileSaveInProgress;
@@ -334,7 +336,6 @@ public class ContinuousCaptureActivity extends Activity implements SurfaceHolder
         TextView tv = (TextView) findViewById(R.id.recording_text);
         String str = getString(R.string.nowSaving);
         tv.setText(str);
-
 
         mCircEncoder.saveVideo(mOutputFile);
     }
@@ -503,9 +504,15 @@ public class ContinuousCaptureActivity extends Activity implements SurfaceHolder
         // We "draw" with the scissor rect and clear calls.  Note this uses window coordinates.
         int val = frameNum % 3;
         switch (val) {
-            case 0:  GLES20.glClearColor(1.0f, 0.0f, 0.0f, 1.0f);   break;
-            case 1:  GLES20.glClearColor(0.0f, 1.0f, 0.0f, 1.0f);   break;
-            case 2:  GLES20.glClearColor(0.0f, 0.0f, 1.0f, 1.0f);   break;
+            case 0:
+                GLES20.glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+                break;
+            case 1:
+                GLES20.glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+                break;
+            case 2:
+                GLES20.glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+                break;
         }
 
         int xpos = (int) (width * ((frameNum % 100) / 100.0f));

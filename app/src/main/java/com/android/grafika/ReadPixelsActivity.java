@@ -62,7 +62,7 @@ public class ReadPixelsActivity extends Activity {
      * Sets the text in the message field.
      */
     void setMessage(int id, String msg) {
-        TextView result = (TextView) findViewById(id);
+        TextView result = findViewById(id);
         result.setText(msg);
     }
 

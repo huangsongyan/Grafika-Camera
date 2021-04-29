@@ -93,7 +93,7 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
         super.onCreate(savedInstanceState);
         setContentView(getContentViewId());
 
-        mSurfaceView = (SurfaceView) findViewById(R.id.playMovie_surface);
+        mSurfaceView = findViewById(R.id.playMovie_surface);
         mSurfaceView.getHolder().addCallback(this);
 
         // Populate file-selection spinner.

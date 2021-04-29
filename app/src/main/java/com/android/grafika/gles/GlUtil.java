@@ -31,8 +31,11 @@ import java.nio.FloatBuffer;
 public class GlUtil {
     public static final String TAG = "Grafika";
 
-    /** Identity matrix for general use.  Don't modify or life will get weird. */
+    /**
+     * Identity matrix for general use.  Don't modify or life will get weird.
+     */
     public static final float[] IDENTITY_MATRIX;
+
     static {
         IDENTITY_MATRIX = new float[16];
         Matrix.setIdentityM(IDENTITY_MATRIX, 0);
@@ -41,7 +44,8 @@ public class GlUtil {
     private static final int SIZEOF_FLOAT = 4;
 
 
-    private GlUtil() {}     // do not instantiate
+    private GlUtil() {
+    }     // do not instantiate
 
     /**
      * Creates a new program from the supplied vertex and fragment shaders.
@@ -67,6 +71,7 @@ public class GlUtil {
         checkGlError("glAttachShader");
         GLES20.glAttachShader(program, pixelShader);
         checkGlError("glAttachShader");
+        //链接程序
         GLES20.glLinkProgram(program);
         int[] linkStatus = new int[1];
         GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus, 0);
@@ -85,11 +90,13 @@ public class GlUtil {
      * @return A handle to the shader, or 0 on failure.
      */
     public static int loadShader(int shaderType, String source) {
+        //shader类型创建
         int shader = GLES20.glCreateShader(shaderType);
         checkGlError("glCreateShader type=" + shaderType);
         GLES20.glShaderSource(shader, source);
         GLES20.glCompileShader(shader);
         int[] compiled = new int[1];
+        //获取状态
         GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);
         if (compiled[0] == 0) {
             Log.e(TAG, "Could not compile shader " + shaderType + ":");
@@ -127,8 +134,8 @@ public class GlUtil {
     /**
      * Creates a texture from raw data.
      *
-     * @param data Image data, in a "direct" ByteBuffer.
-     * @param width Texture width, in pixels (not bytes).
+     * @param data   Image data, in a "direct" ByteBuffer.
+     * @param width  Texture width, in pixels (not bytes).
      * @param height Texture height, in pixels.
      * @param format Image data format (use constant appropriate for glTexImage2D(), e.g. GL_RGBA).
      * @return Handle to texture.

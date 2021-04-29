@@ -30,6 +30,7 @@ import android.view.Surface;
  * Core EGL state (display, context, config).
  * <p>
  * The EGLContext must only be attached to one thread at a time.  This class is not thread-safe.
+ * EGLContext每次只能附加到一个线程。这个类不是线程安全的。
  */
 public final class EglCore {
     private static final String TAG = GlUtil.TAG;
@@ -50,6 +51,7 @@ public final class EglCore {
     // Android-specific extension.
     private static final int EGL_RECORDABLE_ANDROID = 0x3142;
 
+    //通过 eglGetDisplay 方法创建与本地窗口系统的连接，返回的是 EGLDisplay 类型对象，可以把它抽象理解成设备的显示屏幕
     private EGLDisplay mEGLDisplay = EGL14.EGL_NO_DISPLAY;
     private EGLContext mEGLContext = EGL14.EGL_NO_CONTEXT;
     private EGLConfig mEGLConfig = null;
@@ -68,23 +70,28 @@ public final class EglCore {
     /**
      * Prepares EGL display and context.
      * <p>
+     *
      * @param sharedContext The context to share, or null if sharing is not desired.
-     * @param flags Configuration bit flags, e.g. FLAG_RECORDABLE.
+     * @param flags         Configuration bit flags, e.g. FLAG_RECORDABLE.
      */
     public EglCore(EGLContext sharedContext, int flags) {
+
+        // 默认初始化是EGL_NO_DISPLAY，如果不是说明EGL_NO_DISPLAY已经创建
         if (mEGLDisplay != EGL14.EGL_NO_DISPLAY) {
             throw new RuntimeException("EGL already set up");
         }
 
+        //sharedContext如果未null，设置为EGL14.EGL_NO_CONTEXT
         if (sharedContext == null) {
             sharedContext = EGL14.EGL_NO_CONTEXT;
         }
-
+        //获取EGLDisplay
         mEGLDisplay = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY);
         if (mEGLDisplay == EGL14.EGL_NO_DISPLAY) {
             throw new RuntimeException("unable to get EGL14 display");
         }
         int[] version = new int[2];
+        //初始化 EGL
         if (!EGL14.eglInitialize(mEGLDisplay, version, 0, version, 1)) {
             mEGLDisplay = null;
             throw new RuntimeException("unable to initialize EGL14");
@@ -92,6 +99,7 @@ public final class EglCore {
 
         // Try to get a GLES3 context, if requested.
         if ((flags & FLAG_TRY_GLES3) != 0) {
+            //不等于0说明使用GLES3
             //Log.d(TAG, "Trying GLES 3");
             EGLConfig config = getConfig(flags, 3);
             if (config != null) {
@@ -99,9 +107,12 @@ public final class EglCore {
                         EGL14.EGL_CONTEXT_CLIENT_VERSION, 3,
                         EGL14.EGL_NONE
                 };
+                //创建渲染上下文
+                //通过 EGLDisplay 和 EGLConfig ，调用 eglCreateContext 方法创建渲染上下文，得到 EGLContext
                 EGLContext context = EGL14.eglCreateContext(mEGLDisplay, config, sharedContext,
                         attrib3_list, 0);
 
+                //eglGetError 成功后赋值
                 if (EGL14.eglGetError() == EGL14.EGL_SUCCESS) {
                     //Log.d(TAG, "Got GLES 3 config");
                     mEGLConfig = config;
@@ -138,7 +149,7 @@ public final class EglCore {
     /**
      * Finds a suitable EGLConfig.
      *
-     * @param flags Bit flags from constructor.
+     * @param flags   Bit flags from constructor.
      * @param version Must be 2 or 3.
      */
     private EGLConfig getConfig(int flags, int version) {
@@ -148,8 +159,11 @@ public final class EglCore {
         }
 
         // The actual surface is generally RGBA or RGBX, so situationally omitting alpha
+        // 实际的表面通常是RGBA或RGBX，所以省略了alpha
         // doesn't really help.  It can also lead to a huge performance hit on glReadPixels()
+        // 并没有真正的帮助。它还可能导致glReadPixels()的性能大受影响。
         // when reading into a GL_RGBA buffer.
+        //当读取GL_RGBA缓冲区时
         int[] attribList = {
                 EGL14.EGL_RED_SIZE, 8,
                 EGL14.EGL_GREEN_SIZE, 8,
@@ -162,6 +176,7 @@ public final class EglCore {
                 EGL14.EGL_NONE
         };
         if ((flags & FLAG_RECORDABLE) != 0) {
+            //使用FLAG_RECORDABLE
             attribList[attribList.length - 3] = EGL_RECORDABLE_ANDROID;
             attribList[attribList.length - 2] = 1;
         }
@@ -180,6 +195,10 @@ public final class EglCore {
      * called from the thread where the context was created.
      * <p>
      * On completion, no context will be current.
+     * <p>
+     * 释放资源
+     * <p>
+     * 绘制结束，不再需要使用 EGL 时，取消 eglMakeCurrent 的绑定，销毁 EGLDisplay、EGLSurface、EGLContext。
      */
     public void release() {
         if (mEGLDisplay != EGL14.EGL_NO_DISPLAY) {
@@ -197,9 +216,14 @@ public final class EglCore {
         mEGLConfig = null;
     }
 
+    /**
+     * Object finalize() 方法用于实例被垃圾回收器回收的时触发的操作。
+     * 当 GC (垃圾回收器) 确定不存在对该对象的有更多引用时，对象的垃圾回收器就会调用这个方法。
+     */
     @Override
     protected void finalize() throws Throwable {
         try {
+
             if (mEGLDisplay != EGL14.EGL_NO_DISPLAY) {
                 // We're limited here -- finalizers don't run on the thread that holds
                 // the EGL state, so if a surface or context is still current on another
@@ -222,6 +246,7 @@ public final class EglCore {
     }
 
     /**
+     * 创建渲染表面
      * Creates an EGL surface associated with a Surface.
      * <p>
      * If this is destined for MediaCodec, the EGLConfig should have the "recordable" attribute.
@@ -245,6 +270,7 @@ public final class EglCore {
     }
 
     /**
+     * 离屏buffer
      * Creates an EGL surface associated with an offscreen buffer.
      */
     public EGLSurface createOffscreenSurface(int width, int height) {
@@ -263,6 +289,8 @@ public final class EglCore {
     }
 
     /**
+     * 绑定上下文
+     * 通过 eglMakeCurrent 方法将 EGLSurface、EGLContext、EGLDisplay 三者绑定，接下来就可以使用 OpenGL 进行绘制了。
      * Makes our EGL context current, using the supplied surface for both "draw" and "read".
      */
     public void makeCurrent(EGLSurface eglSurface) {
@@ -299,6 +327,7 @@ public final class EglCore {
     }
 
     /**
+     * 当用 OpenGL 绘制结束后，使用 eglSwapBuffers 方法交换前后缓冲，将绘制内容显示到屏幕上
      * Calls eglSwapBuffers.  Use this to "publish" the current frame.
      *
      * @return false on failure
@@ -309,6 +338,7 @@ public final class EglCore {
 
     /**
      * Sends the presentation time stamp to EGL.  Time is expressed in nanoseconds.
+     * 将演示时间戳发送给EGL。时间以纳秒表示。
      */
     public void setPresentationTime(EGLSurface eglSurface, long nsecs) {
         EGLExt.eglPresentationTimeANDROID(mEGLDisplay, eglSurface, nsecs);
@@ -319,7 +349,7 @@ public final class EglCore {
      */
     public boolean isCurrent(EGLSurface eglSurface) {
         return mEGLContext.equals(EGL14.eglGetCurrentContext()) &&
-            eglSurface.equals(EGL14.eglGetCurrentSurface(EGL14.EGL_DRAW));
+                eglSurface.equals(EGL14.eglGetCurrentSurface(EGL14.EGL_DRAW));
     }
 
     /**

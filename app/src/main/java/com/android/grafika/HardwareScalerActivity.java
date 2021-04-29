@@ -100,7 +100,7 @@ public class HardwareScalerActivity extends Activity implements SurfaceHolder.Ca
         mWindowWidthHeight = new int[SURFACE_DIM.length][2];
         updateControls();
 
-        SurfaceView sv = (SurfaceView) findViewById(R.id.hardwareScaler_surfaceView);
+        SurfaceView sv = findViewById(R.id.hardwareScaler_surfaceView);
         sv.getHolder().addCallback(this);
     }
 
@@ -124,6 +124,7 @@ public class HardwareScalerActivity extends Activity implements SurfaceHolder.Ca
             Log.d(TAG, "onResume re-hooking choreographer");
             Choreographer.getInstance().postFrameCallback(this);
         }
+
     }
 
     @Override

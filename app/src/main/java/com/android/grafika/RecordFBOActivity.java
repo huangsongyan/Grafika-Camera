@@ -118,7 +118,7 @@ public class RecordFBOActivity extends Activity implements SurfaceHolder.Callbac
         mSelectedRecordMethod = RECMETHOD_FBO;
         updateControls();
 
-        SurfaceView sv = (SurfaceView) findViewById(R.id.fboActivity_surfaceView);
+        SurfaceView sv = findViewById(R.id.fboActivity_surfaceView);
         sv.getHolder().addCallback(this);
 
         Log.d(TAG, "RecordFBOActivity: onCreate done");
